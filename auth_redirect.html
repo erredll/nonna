@@ -1,24 +1,18 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-  <meta charset="UTF-8">
-  <title>Redirecting to Nonna.Digital App...</title>
+  <title>Redirecting...</title>
   <script>
-    // Try to open the app via custom scheme
-    window.location = 'digital.nonna.app://login-callback/';
+    // Attempt deep link
+    window.location.href = "digital.nonna.app://login-callback/";
 
-    // After 2 seconds, show fallback message
-    setTimeout(function() {
-      document.getElementById('fallback').style.display = 'block';
-    }, 2000);
+    // If it fails (e.g., on desktop), fallback after delay
+    setTimeout(() => {
+      window.location.href = "https://erredll.github.io/nonna/auth_success.html";
+    }, 3000);
   </script>
 </head>
 <body>
-  <h1>Redirecting...</h1>
-  <p>If you have the Nonna.Digital app installed, it should open automatically.</p>
-  <div id="fallback" style="display:none;">
-    <p>If nothing happens, <a href="digital.nonna.app://login-callback/">tap here</a> to try again.</p>
-    <p>If you are on desktop or do not have the app installed, you can safely close this page.</p>
-  </div>
+  <p>Redirecting you to the app...</p>
 </body>
 </html>
