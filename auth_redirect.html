@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Redirecting...</title>
+  <script>
+    // Attempt deep link
+    window.location.href = "digital.nonna.app://login-callback/";
+
+    // If it fails (e.g., on desktop), fallback after delay
+    setTimeout(() => {
+      window.location.href = "https://erredll.github.io/nonna/auth_success.html";
+    }, 3000);
+  </script>
+</head>
+<body>
+  <p>Redirecting you to the app...</p>
+</body>
+</html>
