@@ -2,24 +2,29 @@
 <html>
 <head>
   <title>Redirecting...</title>
-  <script>
-    // Helper to parse query and hash parameters into a single object
+  <script type="module">
+    // Parse query string and hash fragment into one object
     function getAllParams() {
       const params = {};
-      // Parse query string
-      window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
-        params[key] = decodeURIComponent(value);
+
+      // Parse query string (?foo=bar)
+      const queryString = window.location.search.substring(1);
+      queryString.split("&").forEach((param) => {
+        const [key, value] = param.split("=");
+        if (key) params[key] = decodeURIComponent(value || "");
       });
-      // Parse hash fragment (e.g., #access_token=...&refresh_token=...)
-      if (window.location.hash) {
-        window.location.hash.substring(1).split('&').forEach(function(part) {
-          const item = part.split('=');
-          if (item[0]) params[item[0]] = decodeURIComponent(item[1]);
-        });
-      }
+
+      // Parse hash fragment (#access_token=...&refresh_token=...)
+      const hashString = window.location.hash.substring(1);
+      hashString.split("&").forEach((param) => {
+        const [key, value] = param.split("=");
+        if (key) params[key] = decodeURIComponent(value || "");
+      });
+
       return params;
     }
 
+    // Convert params to deep link URL
     function buildDeepLink(params) {
       const base = "digital.nonna.app://login-callback";
       const query = Object.keys(params)
@@ -28,15 +33,22 @@
       return query ? `${base}?${query}` : base;
     }
 
-    // Main logic
+    // Main redirect logic
     (function() {
       const params = getAllParams();
+
+      // Optional: check for required tokens
+      if (!params.access_token || !params.refresh_token) {
+        document.body.innerHTML = "<p>Missing tokens. Please check your confirmation link.</p>";
+        return;
+      }
+
       const deepLink = buildDeepLink(params);
 
-      // Attempt to open the app with all params
+      // Attempt to open the mobile app
       window.location.href = deepLink;
 
-      // Fallback after delay
+      // Fallback after 3 seconds
       setTimeout(() => {
         window.location.href = "https://erredll.github.io/nonna/auth_success.html";
       }, 3000);
