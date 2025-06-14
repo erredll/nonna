@@ -3,13 +3,44 @@
 <head>
   <title>Redirecting...</title>
   <script>
-    // Attempt deep link
-    window.location.href = "digital.nonna.app://login-callback/";
+    // Helper to parse query and hash parameters into a single object
+    function getAllParams() {
+      const params = {};
+      // Parse query string
+      window.location.search.replace(/[?&]+([^=&]+)=([^&]*)/gi, function(m, key, value) {
+        params[key] = decodeURIComponent(value);
+      });
+      // Parse hash fragment (e.g., #access_token=...&refresh_token=...)
+      if (window.location.hash) {
+        window.location.hash.substring(1).split('&').forEach(function(part) {
+          const item = part.split('=');
+          if (item[0]) params[item[0]] = decodeURIComponent(item[1]);
+        });
+      }
+      return params;
+    }
 
-    // If it fails (e.g., on desktop), fallback after delay
-    setTimeout(() => {
-      window.location.href = "https://erredll.github.io/nonna/auth_success.html";
-    }, 3000);
+    function buildDeepLink(params) {
+      const base = "digital.nonna.app://login-callback";
+      const query = Object.keys(params)
+        .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(params[key]))
+        .join("&");
+      return query ? `${base}?${query}` : base;
+    }
+
+    // Main logic
+    (function() {
+      const params = getAllParams();
+      const deepLink = buildDeepLink(params);
+
+      // Attempt to open the app with all params
+      window.location.href = deepLink;
+
+      // Fallback after delay
+      setTimeout(() => {
+        window.location.href = "https://erredll.github.io/nonna/auth_success.html";
+      }, 3000);
+    })();
   </script>
 </head>
 <body>
