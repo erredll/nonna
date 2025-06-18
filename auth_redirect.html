@@ -1,61 +1,31 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8" />
   <title>Redirecting...</title>
-  <script type="module">
-    // Parse query string and hash fragment into one object
-    function getAllParams() {
-      const params = {};
-
-      // Parse query string (?foo=bar)
-      const queryString = window.location.search.substring(1);
-      queryString.split("&").forEach((param) => {
-        const [key, value] = param.split("=");
-        if (key) params[key] = decodeURIComponent(value || "");
-      });
-
-      // Parse hash fragment (#access_token=...&refresh_token=...)
-      const hashString = window.location.hash.substring(1);
-      hashString.split("&").forEach((param) => {
-        const [key, value] = param.split("=");
-        if (key) params[key] = decodeURIComponent(value || "");
-      });
-
-      return params;
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    body {
+      font-family: sans-serif;
+      text-align: center;
+      margin-top: 5rem;
     }
+  </style>
+  <script>
+    (function () {
+      const appDeepLink = "digital.nonna.app://login-callback";
 
-    // Convert params to deep link URL
-    function buildDeepLink(params) {
-      const base = "digital.nonna.app://login-callback";
-      const query = Object.keys(params)
-        .map(key => encodeURIComponent(key) + "=" + encodeURIComponent(params[key]))
-        .join("&");
-      return query ? `${base}?${query}` : base;
-    }
+      // Try to open the mobile app
+      window.location.href = appDeepLink;
 
-    // Main redirect logic
-    (function() {
-      const params = getAllParams();
-
-      // Optional: check for required tokens
-      if (!params.access_token || !params.refresh_token) {
-        document.body.innerHTML = "<p>Missing tokens. Please check your confirmation link.</p>";
-        return;
-      }
-
-      const deepLink = buildDeepLink(params);
-
-      // Attempt to open the mobile app
-      window.location.href = deepLink;
-
-      // Fallback after 3 seconds
+      // Fallback to web success page after 2.5 seconds
       setTimeout(() => {
         window.location.href = "https://erredll.github.io/nonna/auth_success.html";
-      }, 3000);
+      }, 2500);
     })();
   </script>
 </head>
 <body>
-  <p>Redirecting you to the app...</p>
+  <p>Redirecting you to the Nonna app…</p>
 </body>
 </html>
