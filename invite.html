@@ -142,11 +142,16 @@
   <script>
     // --- Token Extraction ---
     function getTokenFromPath() {
-      // Expecting /i/<token> or /invite.html?token=<token>
+      // Expecting /invite.html?token=<token> (new format) or /i/<token> (legacy format)
+      const urlParams = new URLSearchParams(window.location.search);
+      const tokenFromQuery = urlParams.get('token');
+      if (tokenFromQuery) return tokenFromQuery;
+      
+      // Legacy path format
       const pathMatch = window.location.pathname.match(/\/i\/([a-zA-Z0-9\-]+)/);
       if (pathMatch) return pathMatch[1];
-      const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('token');
+      
+      return null;
     }
     const token = getTokenFromPath();
     if (token) {
@@ -156,9 +161,23 @@
     // --- APK URL Extraction ---
     function getApkUrlFromParams() {
       const urlParams = new URLSearchParams(window.location.search);
-      return urlParams.get('apk_url');
+      const apkUrl = urlParams.get('apk_url');
+      if (apkUrl) {
+        // Decode the URL if it's encoded
+        try {
+          return decodeURIComponent(apkUrl);
+        } catch (e) {
+          console.warn('Failed to decode APK URL:', e);
+          return apkUrl; // Return as-is if decoding fails
+        }
+      }
+      return null;
     }
     const APK_URL = getApkUrlFromParams();
+    
+    // Debug logging
+    console.log('Extracted APK URL:', APK_URL);
+    console.log('Current URL:', window.location.href);
 
     // --- Device Detection ---
     function isAndroid() {
@@ -211,12 +230,19 @@
           downloadBtn.href = APK_URL;
           downloadBtn.style.display = '';
           apkUrlMissing.style.display = 'none';
+          console.log('APK download link configured:', APK_URL);
         } else {
           downloadBtn.style.display = 'none';
           apkUrlMissing.style.display = 'block';
+          console.warn('No APK URL provided in the invite link');
         }
         openInAppBtn.onclick = function() {
-          window.location.href = `nonna://invite?token=${token}`;
+          if (token) {
+            console.log('Opening app with token:', token);
+            window.location.href = `nonna://invite?token=${token}`;
+          } else {
+            console.error('No token found for deep link');
+          }
         };
       } else if (isIOS()) {
         iosSection.style.display = 'block';
