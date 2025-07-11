@@ -103,7 +103,7 @@
     <div id="deep-link-section" style="display:none;">
       <div class="open-app">Opening the app...</div>
     </div>
-    <div id="apk-section" style="display:none;">
+    <div id="android-section" style="display:none;">
       <a id="download-apk" class="btn" href="#" download>Download Nonna Digital APK</a>
       <div class="instructions">
         <b>How to install:</b>
@@ -115,11 +115,24 @@
       </div>
       <button class="btn" id="open-in-app">Open in App</button>
       <div class="open-app">If you have trouble, copy this invite code:<br><span id="token-code" style="font-family:monospace;font-size:1.1em;"></span></div>
+      <div id="apk-url-missing" style="color:#c00;display:none;margin-top:10px;">APK download link not provided. Please contact your administrator.</div>
     </div>
-    <div id="unsupported-section" style="display:none;">
+    <div id="ios-section" style="display:none;">
       <div class="instructions">
-        This invite link is only supported on Android devices.<br>
-        Please open this page on your Android phone or tablet.
+        <b>Nonna Digital is not yet available for iPhone/iPad.</b><br>
+        Please check back soon or contact your inviter for updates.
+      </div>
+    </div>
+    <div id="desktop-section" style="display:none;">
+      <div class="instructions">
+        <b>This invite link is intended for mobile devices.</b><br>
+        Please open this page on your Android or iOS phone or tablet to join Nonna Digital.
+      </div>
+    </div>
+    <div id="unknown-section" style="display:none;">
+      <div class="instructions">
+        <b>We couldn't detect your device type.</b><br>
+        Please try opening this invite link on your mobile device.
       </div>
     </div>
   </div>
@@ -127,10 +140,6 @@
     &copy; 2024 Nonna Digital &mdash; <a href="https://www.nonna.digital" style="color:#aaa;">www.nonna.digital</a>
   </div>
   <script>
-    // --- CONFIG ---
-    // TODO: Replace with your actual Supabase Storage public URL for the latest APK
-    const APK_URL = "https://lnxffdydgroxdgvmgixq.supabase.co/storage/v1/object/public/apk/latest-release.apk";
-
     // --- Token Extraction ---
     function getTokenFromPath() {
       // Expecting /i/<token> or /invite.html?token=<token>
@@ -144,12 +153,25 @@
       document.getElementById('token-code').textContent = token;
     }
 
+    // --- APK URL Extraction ---
+    function getApkUrlFromParams() {
+      const urlParams = new URLSearchParams(window.location.search);
+      return urlParams.get('apk_url');
+    }
+    const APK_URL = getApkUrlFromParams();
+
     // --- Device Detection ---
     function isAndroid() {
       return /Android/i.test(navigator.userAgent);
     }
+    function isIOS() {
+      return /iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
     function isMobile() {
       return /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    }
+    function isDesktop() {
+      return !isMobile();
     }
 
     // --- Deep Link ---
@@ -161,15 +183,20 @@
     // --- Main Logic ---
     window.addEventListener('DOMContentLoaded', function() {
       const deepLinkSection = document.getElementById('deep-link-section');
-      const apkSection = document.getElementById('apk-section');
-      const unsupportedSection = document.getElementById('unsupported-section');
+      const androidSection = document.getElementById('android-section');
+      const iosSection = document.getElementById('ios-section');
+      const desktopSection = document.getElementById('desktop-section');
+      const unknownSection = document.getElementById('unknown-section');
       const downloadBtn = document.getElementById('download-apk');
       const openInAppBtn = document.getElementById('open-in-app');
+      const apkUrlMissing = document.getElementById('apk-url-missing');
 
-      if (!isAndroid()) {
-        unsupportedSection.style.display = 'block';
-        return;
-      }
+      // Hide all sections by default
+      deepLinkSection.style.display = 'none';
+      androidSection.style.display = 'none';
+      iosSection.style.display = 'none';
+      desktopSection.style.display = 'none';
+      unknownSection.style.display = 'none';
 
       // If opened via deep-link, try to open the app
       if (window.location.hash === '#open') {
@@ -178,14 +205,26 @@
         return;
       }
 
-      // Show APK download and Open in App
-      apkSection.style.display = 'block';
-      downloadBtn.href = APK_URL;
-      openInAppBtn.onclick = function() {
-        // Try to open the app via deep-link
-        window.location.href = `nonna://invite?token=${token}`;
-        // Optionally, show a message or fallback after a delay
-      };
+      if (isAndroid()) {
+        androidSection.style.display = 'block';
+        if (APK_URL) {
+          downloadBtn.href = APK_URL;
+          downloadBtn.style.display = '';
+          apkUrlMissing.style.display = 'none';
+        } else {
+          downloadBtn.style.display = 'none';
+          apkUrlMissing.style.display = 'block';
+        }
+        openInAppBtn.onclick = function() {
+          window.location.href = `nonna://invite?token=${token}`;
+        };
+      } else if (isIOS()) {
+        iosSection.style.display = 'block';
+      } else if (isDesktop()) {
+        desktopSection.style.display = 'block';
+      } else {
+        unknownSection.style.display = 'block';
+      }
     });
   </script>
 </body>
